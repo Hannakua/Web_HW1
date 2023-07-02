@@ -1,12 +1,12 @@
 from pathlib import Path
-from classes import Record, AddressBook, Name, Email, Birthday, Phone, Notebook, RecordNote, Hashtag
-# from classes_for_notebook import Notebook, RecordNote, Hashtag
+from classes import Record, AddressBook, Name, Email, Birthday, Phone, Notebook, RecordNote, Hashtag, Info_output
 import sort_dir
 
 
 phonebook = AddressBook()
 notebook = Notebook()
 cashe = ""
+console_view = Info_output()
 
 
 def input_error(func):
@@ -68,24 +68,7 @@ def exit():
 
 
 def help():
-    return (
-        "add name 0*********/example@email.com/dd.mm.yyyy - add a phone/email/birthday to a contact\n"
-        "note note_#hashtag_note - create a note with the specified hashtag(can be specified now or later)\n"
-        "change name new_phone index - change the phone number at the specified index (if not specified, the first one will be changed)\n"
-        "modify hashtag index new_note - modify the note with the specified hashtag and index\n"
-        "search criteria - search for criteria among emails, phones, and names\n"
-        "show all - show all contacts\n"
-        "show notes - show all notes\n"
-        "phone name - show all phone numbers for the specified name\n"
-        "email name - show all emails for the specified name\n"
-        "hashtag hashtag - displays all notes for the specified hashtag\n"
-        "birthday name - show the birthday date with the number of days remaining\n"
-        "birthdays - displays a list of contacts whose birthday is a specified number of days from the current date(standard 7 days)\n"
-        "page page_number number_of_contacts_per_page - show all contacts divided into pages, default is the first page with 3 contacts\n"
-        "notes page_number number_of_hashtags - show all notes divided into pages, default is the first page with all notes of one hashtag\n"
-        "delete name/#hashtag - clears a contact/hashtag by the specified name/hashtag\n"
-        "exit/good bye/close - shutdown/end program"
-    )
+    return console_view.output_info_help()
 
 
 def find_matching_lines(user_input):
