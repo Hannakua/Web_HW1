@@ -4,25 +4,67 @@ from collections import UserDict
 from abc import ABC, abstractmethod
 
 class Info_for_user(ABC):
-    def __init__(self) -> None:
-        self.info = None
-
+    # def __init__(self) -> None:
+    #     self.info = None
 
     @abstractmethod
-    def output_info(self, info : dict):
+    def output_info_notes(self, data):
+        pass
+
+    @abstractmethod
+    def output_info_record(self, name):
+        pass
+
+    @abstractmethod
+    def output_info_help(self):
         pass
 
 class Info_output(Info_for_user):
-    def __init__(self, name, value):
-        self.name = name
-        self.value  = value
-
-
-    @abstractmethod
-    def output_info(self):
-        return f'{self.name}: {self.value}'
     
-
+    # @abstractmethod
+    def output_info_notes(self, data):
+        result = ""
+        for tag in data:
+            result += str(data[tag]) + "\n"
+        return result
+    
+    # @abstractmethod
+    def output_info_record(self, record, name: str) -> str:    
+        result = ''
+        result += f'{name}:'
+        if record.phones:
+                phones = ', '.join([phone.value for phone in record.phones])
+                result += f' phones: {phones}'
+        if record.emails:
+                emails = ', '.join([email.value for email in record.emails])
+                result += f' emails: {emails}'
+        if record.birthday:
+                result += f' birthday: {record.birthday.value}'
+                days_left = record.days_to_birthday()
+                result += f' days to birthday: {days_left}'
+        return result
+    
+    # @abstractmethod
+    def output_info_help(self) -> str:
+        return (
+                "add name 0*********/example@email.com/dd.mm.yyyy - add a phone/email/birthday to a contact\n"
+                "note note_#hashtag_note - create a note with the specified hashtag(can be specified now or later)\n"
+                "change name new_phone index - change the phone number at the specified index (if not specified, the first one will be changed)\n"
+                "modify hashtag index new_note - modify the note with the specified hashtag and index\n"
+                "search criteria - search for criteria among emails, phones, and names\n"
+                "show all - show all contacts\n"
+                "show notes - show all notes\n"
+                "phone name - show all phone numbers for the specified name\n"
+                "email name - show all emails for the specified name\n"
+                "hashtag hashtag - displays all notes for the specified hashtag\n"
+                "birthday name - show the birthday date with the number of days remaining\n"
+                "birthdays - displays a list of contacts whose birthday is a specified number of days from the current date(standard 7 days)\n"
+                "page page_number number_of_contacts_per_page - show all contacts divided into pages, default is the first page with 3 contacts\n"
+                "notes page_number number_of_hashtags - show all notes divided into pages, default is the first page with all notes of one hashtag\n"
+                "delete name/#hashtag - clears a contact/hashtag by the specified name/hashtag\n"
+                "exit/good bye/close - shutdown/end program"
+            )
+            
 class Field:
     def __init__(self, value) -> None:
         self.value = value
@@ -201,6 +243,7 @@ class AddressBook(UserDict):
         self.data = {}
         if record is not None:
             self.add_record(record)
+        self.console_view = Info_output()
 
     def add_record(self, record: Record):
         self.data[record.get_name()] = record
@@ -220,21 +263,9 @@ class AddressBook(UserDict):
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
-    def show_record(self, name: str) -> str:    
-            result = ''
-            record = self.get_records(name)
-            result += f'{name}:'
-            if record.phones:
-                phones = ', '.join([phone.value for phone in record.phones])
-                result += f' phones: {phones}'
-            if record.emails:
-                emails = ', '.join([email.value for email in record.emails])
-                result += f' emails: {emails}'
-            if record.birthday:
-                result += f' birthday: {record.birthday.value}'
-                days_left = record.days_to_birthday()
-                result += f' days to birthday: {days_left}'
-            return result
+    def show_record(self, name: str) -> str:
+        record = self.get_records(name)
+        return self.console_view.output_info_record(record, name)
 
     def load_address_book(self, filename):
         try:
@@ -337,6 +368,7 @@ class Notebook(UserDict):
         self.data = {}
         if record is not None:
             self.add_record(record)
+        self.console_view = Info_output()
 
     def add_record(self, record):
         self.data[record.get_hashtag()] = record
@@ -385,7 +417,4 @@ class Notebook(UserDict):
             raise StopIteration
 
     def __str__(self):
-        result = ""
-        for tag in self.data:
-            result += str(self.data[tag]) + "\n"
-        return result
+        return self.console_view.output_info_notes(self.data)
